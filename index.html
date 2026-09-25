@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sagar Pundir | AI Engineer & Data Scientist — Fire & Ice Elemental 3D Portfolio</title>
+    <meta name="description" content="3D Fire & Ice Elemental Portfolio of Sagar Pundir - Data Science & AI, IIT Guwahati.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@300;400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        elemental: {
+                            ice: '#38bdf8',
+                            frost: '#7dd3fc',
+                            glacier: '#0284c7',
+                            fire: '#f97316',
+                            ember: '#ef4444',
+                            magma: '#b91c1c',
+                            ash: '#0f172a',
+                            clash: '#c084fc'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons, Three.js & GSAP Libraries -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        body {
+            background-color: #030712;
+            color: #f8fafc;
+            overflow-x: hidden;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #38bdf8, #f97316);
+            border-radius: 4px;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .glass-card-ice {
+            background: rgba(2, 44, 74, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .glass-card-ice:hover {
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+            transform: translateY(-4px);
+        }
+
+        .glass-card-fire {
+            background: rgba(69, 10, 10, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .glass-card-fire:hover {
+            border-color: rgba(249, 115, 22, 0.8);
+            box-shadow: 0 0 35px rgba(249, 115, 22, 0.35);
+            transform: translateY(-4px);
+        }
+
+        .text-fire-glow {
+            text-shadow: 0 0 18px rgba(249, 115, 22, 0.8), 0 0 32px rgba(239, 68, 68, 0.5);
+        }
+        .text-ice-glow {
+            text-shadow: 0 0 18px rgba(56, 189, 248, 0.8), 0 0 32px rgba(125, 211, 252, 0.5);
+        }
+
+        #webgl-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        .interactive-layer {
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .interactive-layer button,
+        .interactive-layer a,
+        .interactive-layer input,
+        .interactive-layer textarea,
+        .interactive-layer .glass-panel,
+        .interactive-layer .glass-card-ice,
+        .interactive-layer .glass-card-fire {
+            pointer-events: auto;
+        }
+
+        .section-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5rem 1.5rem;
+            position: relative;
+        }
+
+        .clash-divider {
+            background: linear-gradient(90deg, #38bdf8, #c084fc, #f97316);
+        }
+    </style>
+</head>
+<body class="dark selection:bg-orange-500 selection:text-black">
+
+    <!-- 3D Canvas -->
+    <div id="webgl-container"></div>
+
+    <!-- HUD Navigation Header -->
+    <header class="fixed top-0 left-0 w-full z-50 p-4 md:p-6 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass-panel rounded-2xl px-5 py-3">
+            
+            <!-- Brand Logo -->
+            <a href="#hero" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-indigo-500 to-orange-500 flex items-center justify-center font-serif font-black text-black text-xl shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform">
+                    SP
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-lg leading-tight tracking-wide text-white group-hover:text-cyan-300 transition-colors">Sagar Pundir</span>
+                    <span class="text-[10px] font-mono text-slate-300">DATA SCIENCE & AI • IIT GUWAHATI</span>
+                </div>
+            </a>
+
+            <!-- Mode Switcher Indicator -->
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-700/60 font-mono text-xs">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="text-slate-400">REALM:</span>
+                <span id="realm-label" class="text-orange-400 font-bold">FIRE & ICE DUALITY</span>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="hidden lg:flex items-center gap-1 font-mono text-xs tracking-wider">
+                <a href="#hero" class="px-3 py-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-slate-800/50 transition-all">01. APEX</a>
+                <a href="#about" class="px-3 py-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-slate-800/50 transition-all">02. FROST</a>
+                <a href="#skills" class="px-3 py-2 rounded-lg text-slate-300 hover:text-orange-400 hover:bg-slate-800/50 transition-all">03. FORGE</a>
+                <a href="#projects" class="px-3 py-2 rounded-lg text-slate-300 hover:text-orange-400 hover:bg-slate-800/50 transition-all">04. VAULT</a>
+                <a href="#contact" class="px-3 py-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-slate-800/50 transition-all">05. SANCTUARY</a>
+            </nav>
+
+            <!-- Audio & Realm Mode Controls -->
+            <div class="flex items-center gap-2">
+                <!-- Realm Toggle (Dual / Max Fire / Max Ice) -->
+                <button id="toggle-realm-mode" class="p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-cyan-300 hover:text-orange-400 transition-colors flex items-center gap-1.5" title="Switch Elemental View Mode">
+                    <i data-lucide="flame" class="w-4 h-4 text-orange-400" id="realm-icon"></i>
+                    <span id="realm-mode-btn-text" class="text-[10px] font-mono hidden md:inline">DUAL MODE</span>
+                </button>
+
+                <!-- Audio Synthesizer Toggle -->
+                <button id="toggle-audio" class="p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-slate-300 hover:text-cyan-300 transition-colors" title="Toggle Fire & Ice Ambient Audio Synth">
+                    <i data-lucide="volume-x" class="w-4 h-4" id="audio-icon"></i>
+                </button>
+
+                <!-- GitHub CTA -->
+                <a href="https://github.com/SagarPundir368" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-orange-500 hover:from-cyan-400 hover:to-orange-400 text-black font-mono text-xs font-bold shadow-lg shadow-orange-900/30 transition-all hover:scale-105">
+                    <i data-lucide="github" class="w-4 h-4"></i>
+                    <span>GITHUB</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Progress Bar -->
+        <div class="max-w-7xl mx-auto px-5 mt-2">
+            <div class="w-full bg-slate-950/80 h-1 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full clash-divider w-0 transition-all duration-100"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="interactive-layer">
+
+        <!-- ================= 1. HERO ZONE (ELEMENTAL APEX) ================= -->
+        <section id="hero" class="section-container min-h-screen pt-28">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Hero Left Intro -->
+                <div class="lg:col-span-7 flex flex-col items-start space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/80 text-xs font-mono">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                        <span class="text-cyan-300">GLACIAL RIGOR</span>
+                        <span class="text-slate-500">•</span>
+                        <span class="text-orange-400">VOLCANIC INNOVATION</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white font-sans">
+                        Architecting <br>
+                        <span class="bg-gradient-to-r from-cyan-300 via-purple-300 to-orange-400 bg-clip-text text-transparent text-fire-glow">AI & Multi-Agent Systems</span>
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-slate-300 font-light max-w-2xl leading-relaxed">
+                        I'm <strong class="text-cyan-300">Sagar Pundir</strong>, an AI Engineer & Data Science undergraduate at <strong class="text-orange-400">IIT Guwahati</strong>. Forging scalable LLM orchestrations, hybrid RAG vector engines, and high-performance machine learning pipelines at the intersection of rigor and speed.
+                    </p>
+
+                    <!-- CTAs -->
+                    <div class="flex flex-wrap items-center gap-4 pt-2 w-full sm:w-auto">
+                        <a href="#projects" class="px-7 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-400 to-cyan-400 hover:from-orange-400 hover:to-cyan-300 text-black font-bold font-mono text-sm shadow-xl shadow-orange-500/25 hover:scale-105 transition-all flex items-center justify-center gap-2">
+                            <span>EXPLORE ARTIFACTS</span>
+                            <i data-lucide="zap" class="w-4 h-4"></i>
+                        </a>
+
+                        <a href="#contact" class="px-7 py-3.5 rounded-xl glass-panel hover:bg-slate-800/60 text-cyan-300 font-mono text-sm border-cyan-500/40 hover:border-orange-400 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="mail" class="w-4 h-4"></i>
+                            <span>INITIATE CONTACT</span>
+                        </a>
+                    </div>
+
+                    <!-- Direct Social Links -->
+                    <div class="flex flex-wrap items-center gap-4 pt-2 text-slate-400 font-mono text-xs">
+                        <a href="https://github.com/SagarPundir368" target="_blank" class="hover:text-cyan-300 transition-colors flex items-center gap-1.5">
+                            <i data-lucide="github" class="w-4 h-4"></i> SagarPundir368
+                        </a>
+                        <span>•</span>
+                        <a href="https://linkedin.com/in/sagarpundir368" target="_blank" class="hover:text-orange-400 transition-colors flex items-center gap-1.5">
+                            <i data-lucide="linkedin" class="w-4 h-4"></i> sagarpundir368
+                        </a>
+                        <span>•</span>
+                        <a href="mailto:sagarpundir368@gmail.com" class="hover:text-cyan-300 transition-colors flex items-center gap-1.5">
+                            <i data-lucide="mail" class="w-4 h-4"></i> sagarpundir368@gmail.com
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Right Dual Profile Card -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="relative group w-72 h-80 sm:w-80 sm:h-96">
+                        <!-- Dual Glow Effect -->
+                        <div class="absolute -inset-2 bg-gradient-to-r from-cyan-500 via-purple-500 to-orange-500 rounded-3xl blur-xl opacity-50 group-hover:opacity-80 transition duration-1000"></div>
+                        
+                        <!-- Spatial Dual Frame Container -->
+                        <div class="relative w-full h-full glass-panel rounded-3xl p-4 flex flex-col justify-between border-2 border-slate-700/80 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-500">
+                            
+                            <div class="flex justify-between items-center text-xs font-mono mb-2">
+                                <span class="text-cyan-300 flex items-center gap-1"><i data-lucide="snowflake" class="w-3.5 h-3.5"></i> GLACIAL</span>
+                                <span class="text-orange-400 flex items-center gap-1">VOLCANIC <i data-lucide="flame" class="w-3.5 h-3.5"></i></span>
+                            </div>
+
+                            <!-- Profile Image Container -->
+                            <!-- REPLACEMENT POINT: Replace assets/profile.jpg with your photo path -->
+                            <div class="relative w-full h-full rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-700/60">
+                                <img src="assets/profile.jpg" 
+                                     alt="Sagar Pundir Profile" 
+                                     class="w-full h-full object-cover rounded-2xl z-10"
+                                     onerror="this.onerror=null; this.style.display='none'; document.getElementById('profile-fallback').style.display='flex';">
+                                
+                                <!-- Fallback Vector Avatar -->
+                                <div id="profile-fallback" class="hidden absolute inset-0 flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 text-center">
+                                    <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-cyan-500 to-orange-500 p-0.5 mb-3 shadow-lg shadow-orange-500/20">
+                                        <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
+                                            <i data-lucide="user" class="w-12 h-12 text-slate-200"></i>
+                                        </div>
+                                    </div>
+                                    <span class="font-serif font-bold text-lg text-white">SAGAR PUNDIR</span>
+                                    <span class="font-mono text-xs text-orange-400 mt-1">AI ENGINEER & DATA SCIENTIST</span>
+                                    <span class="text-[10px] font-mono text-slate-400 mt-3 border border-slate-700 px-2 py-0.5 rounded">Place assets/profile.jpg to render photo</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 pt-2 border-t border-slate-700/60 flex justify-between items-center text-[11px] font-mono">
+                                <span class="text-slate-300">B.Sc. Data Science & AI</span>
+                                <span class="text-orange-400 font-bold">CPI 8.42</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 2. ABOUT & EDUCATION (GLACIAL FORTRESS) ================= -->
+        <section id="about" class="section-container">
+            <div class="max-w-5xl mx-auto w-full space-y-12">
+                
+                <div class="text-center space-y-2">
+                    <div class="inline-block text-cyan-400 font-mono text-xs tracking-widest uppercase">// 02. GLACIAL KNOWLEDGE FORTRESS</div>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white font-serif">About & Academic Rigor</h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full mt-2"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
+                    
+                    <div class="md:col-span-7 glass-card-ice p-8 rounded-3xl flex flex-col justify-between space-y-6">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                                    <i data-lucide="snowflake" class="w-6 h-6"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Foundational Core</h3>
+                            </div>
+                            
+                            <p class="text-slate-300 leading-relaxed font-light">
+                                Pursuing B.Sc. (Hons.) in Data Science & AI at <strong class="text-cyan-300">Indian Institute of Technology, Guwahati</strong>. Focused on modern generative AI tech stacks including LLM agentic orchestration, hybrid RAG search architectures, and memory-optimized recommendation models.
+                            </p>
+                            <p class="text-slate-300 leading-relaxed font-light">
+                                Skilled at deploying end-to-end MLOps pipelines with reproducible version control and multi-agent systems for real-world automated workflows.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-cyan-500/20 font-mono text-xs">
+                            <div class="flex items-center gap-2 text-cyan-300">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-cyan-400"></i> LangGraph Systems
+                            </div>
+                            <div class="flex items-center gap-2 text-cyan-300">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-cyan-400"></i> Hybrid FAISS + BM25 RAG
+                            </div>
+                            <div class="flex items-center gap-2 text-cyan-300">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-cyan-400"></i> Model Context Protocol
+                            </div>
+                            <div class="flex items-center gap-2 text-cyan-300">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-cyan-400"></i> Dask Sparse Scale
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-5 flex flex-col gap-6">
+                        <!-- IIT Guwahati -->
+                        <div class="glass-card-ice p-6 rounded-3xl flex-1 flex flex-col justify-between relative overflow-hidden">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <span class="px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-[11px] border border-cyan-500/30">2023 — 2027</span>
+                                    <span class="text-cyan-300 font-mono text-xs flex items-center gap-1 font-bold"><i data-lucide="award" class="w-3.5 h-3.5"></i> CPI 8.42</span>
+                                </div>
+                                
+                                <h4 class="text-lg font-bold text-white">Indian Institute of Technology, Guwahati</h4>
+                                <p class="text-cyan-400 font-mono text-xs">B.Sc. (Hons.) Data Science & AI</p>
+                                <p class="text-slate-400 text-xs">Core domains: Machine Learning, Optimization, Neural Networks, Natural Language Processing, MLOps, System Architecture.</p>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Education -->
+                        <div class="glass-card-ice p-6 rounded-3xl">
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 font-mono text-[11px]">2020 — 2022</span>
+                                    <span class="text-cyan-300 font-mono text-xs font-bold">88.2%</span>
+                                </div>
+                                <h4 class="text-md font-bold text-white">SV Sector-3 Rohini, CBSE</h4>
+                                <p class="text-slate-400 text-xs font-mono">Senior Secondary (PCM)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 3. TECH STACK (ELEMENTAL FORGE) ================= -->
+        <section id="skills" class="section-container">
+            <div class="max-w-6xl mx-auto w-full space-y-12">
+                
+                <div class="text-center space-y-2">
+                    <div class="inline-block text-orange-400 font-mono text-xs tracking-widest uppercase">// 03. VOLCANIC ELEMENTAL FORGE</div>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white font-serif">Skills & Architecture</h2>
+                    <p class="text-slate-400 text-sm max-w-lg mx-auto">High-temperature tech matrix across Generative AI, Machine Learning frameworks, Vector DBs, and Cloud MLOps.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Generative AI -->
+                    <div class="glass-card-fire p-6 rounded-3xl space-y-4 hover:border-orange-400/60 transition-all">
+                        <div class="flex items-center gap-3 text-orange-400">
+                            <i data-lucide="flame" class="w-6 h-6"></i>
+                            <h3 class="font-bold text-white text-lg">Generative AI & Agents</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">LangChain</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">LangGraph</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">RAG Engine</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">MCP Protocol</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">FAISS</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">ChromaDB</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-orange-300 border border-orange-500/30 text-xs font-mono">Astra DB</span>
+                        </div>
+                    </div>
+
+                    <!-- Data Science & ML -->
+                    <div class="glass-card-fire p-6 rounded-3xl space-y-4 hover:border-amber-400/60 transition-all">
+                        <div class="flex items-center gap-3 text-amber-400">
+                            <i data-lucide="cpu" class="w-6 h-6"></i>
+                            <h3 class="font-bold text-white text-lg">Data Science & ML</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">Scikit-learn</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">TensorFlow</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">Pandas</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">NumPy</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">Pydantic</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">spaCy</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">NLTK</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-amber-300 border border-amber-500/30 text-xs font-mono">Dask</span>
+                        </div>
+                    </div>
+
+                    <!-- Languages & Backend -->
+                    <div class="glass-card-ice p-6 rounded-3xl space-y-4 hover:border-cyan-400/60 transition-all">
+                        <div class="flex items-center gap-3 text-cyan-300">
+                            <i data-lucide="code-2" class="w-6 h-6"></i>
+                            <h3 class="font-bold text-white text-lg">Languages & Backend</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-cyan-300 border border-cyan-500/30 text-xs font-mono">Python</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-cyan-300 border border-cyan-500/30 text-xs font-mono">SQL</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-cyan-300 border border-cyan-500/30 text-xs font-mono">FastAPI</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-cyan-300 border border-cyan-500/30 text-xs font-mono">Flask</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-cyan-300 border border-cyan-500/30 text-xs font-mono">Streamlit</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-950/90 text-cyan-300 border border-cyan-500/30 text-xs font-mono">SQLite</span>
+                        </div>
+                    </div>
+
+                    <!-- Cloud & MLOps -->
+                    <div class="glass-panel p-6 rounded-3xl space-y-4 sm:col-span-2 lg:col-span-3 hover:border-orange-400/60 transition-all">
+                        <div class="flex items-center gap-3 text-orange-400">
+                            <i data-lucide="server" class="w-6 h-6"></i>
+                            <h3 class="font-bold text-white text-lg">Cloud Infrastructure & MLOps</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3.5 py-1.5 rounded-lg bg-slate-950 text-orange-300 border border-orange-500/30 text-xs font-mono flex items-center gap-1.5"><i data-lucide="cloud" class="w-3.5 h-3.5"></i> AWS (EC2, S3, IAM)</span>
+                            <span class="px-3.5 py-1.5 rounded-lg bg-slate-950 text-orange-300 border border-orange-500/30 text-xs font-mono flex items-center gap-1.5"><i data-lucide="container" class="w-3.5 h-3.5"></i> Docker</span>
+                            <span class="px-3.5 py-1.5 rounded-lg bg-slate-950 text-orange-300 border border-orange-500/30 text-xs font-mono flex items-center gap-1.5"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Git</span>
+                            <span class="px-3.5 py-1.5 rounded-lg bg-slate-950 text-orange-300 border border-orange-500/30 text-xs font-mono flex items-center gap-1.5"><i data-lucide="database" class="w-3.5 h-3.5"></i> DVC</span>
+                            <span class="px-3.5 py-1.5 rounded-lg bg-slate-950 text-orange-300 border border-orange-500/30 text-xs font-mono flex items-center gap-1.5"><i data-lucide="activity" class="w-3.5 h-3.5"></i> MLflow</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 4. PROJECTS (LAVA VAULT) ================= -->
+        <section id="projects" class="section-container">
+            <div class="max-w-6xl mx-auto w-full space-y-12">
+                
+                <div class="text-center space-y-2">
+                    <div class="inline-block text-orange-400 font-mono text-xs tracking-widest uppercase">// 04. LAVA VAULT OF ARTIFACTS</div>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white font-serif">Featured Deployments</h2>
+                    <p class="text-slate-400 text-sm max-w-lg mx-auto">Production-grade AI systems, multi-agent frameworks, and high-dimensional vector search engines.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <!-- TravelSaathi -->
+                    <div class="glass-card-fire rounded-3xl p-7 flex flex-col justify-between space-y-6 relative group overflow-hidden border border-orange-500/25 hover:border-orange-400/80 transition-all">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-start">
+                                <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 text-xs font-mono">LANGGRAPH • MCP</span>
+                                <span class="text-slate-400 text-xs font-mono">Jun 2026 – Aug 2026</span>
+                            </div>
+
+                            <h3 class="text-2xl font-bold text-white group-hover:text-orange-300 transition-colors">
+                                TravelSaathi — Multi-Agent Travel Planner
+                            </h3>
+
+                            <p class="text-slate-300 text-sm leading-relaxed font-light">
+                                LangGraph multi-agent orchestration with semantic routing replacing legacy regex intent parsing.
+                            </p>
+
+                            <ul class="space-y-2 text-xs text-slate-300 font-light">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-orange-400 shrink-0 mt-0.5"></i>
+                                    <span>Dual Groq model setup: Qwen2.5-32B (tools) & GPT-OSS-120B (reasoning).</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-orange-400 shrink-0 mt-0.5"></i>
+                                    <span>Pydantic-validated tool calling converting unstructured input into SQLite expense records.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-orange-400 shrink-0 mt-0.5"></i>
+                                    <span>Integrated live flight, hotel, and weather telemetry via 3 Model Context Protocol (MCP) servers.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-orange-500/20">
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-mono text-orange-300">
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Python</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">LangGraph</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">MCP</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">SQLite</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Streamlit</span>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <a href="https://github.com/SagarPundir368/TravelSaathi" target="_blank" class="px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-orange-500/40 text-orange-300 text-xs font-mono flex items-center gap-2 transition-all">
+                                    <i data-lucide="github" class="w-3.5 h-3.5"></i> Code
+                                </a>
+                                <a href="https://travelsaathi-zbm8wranudgg3rq8fmkbkc.streamlit.app/" target="_blank" class="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-black font-bold text-xs font-mono flex items-center gap-2 hover:opacity-90 transition-all">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical RAG -->
+                    <div class="glass-card-ice rounded-3xl p-7 flex flex-col justify-between space-y-6 relative group overflow-hidden border border-cyan-500/25 hover:border-cyan-400/80 transition-all">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-start">
+                                <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono">HYBRID RAG • RRF</span>
+                                <span class="text-slate-400 text-xs font-mono">Mar 2026 – Jun 2026</span>
+                            </div>
+
+                            <h3 class="text-2xl font-bold text-white group-hover:text-cyan-300 transition-colors">
+                                Medical RAG Chatbot — Hybrid QA
+                            </h3>
+
+                            <p class="text-slate-300 text-sm leading-relaxed font-light">
+                                Clinical QA engine combining Reciprocal Rank Fusion (FAISS + BM25) and BGE-M3 re-ranking over 2,000+ literature pages.
+                            </p>
+
+                            <ul class="space-y-2 text-xs text-slate-300 font-light">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                    <span>Hybrid recursive-semantic chunking producing 9,300 indexed chunks.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                    <span>Reduced chunk preprocessing time by 40% (from 25 min to under 15 min on GPU).</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                    <span>Query rewriting & conversation context memory deployed on Streamlit Cloud.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-cyan-500/20">
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-mono text-cyan-300">
+                                <span class="px-2 py-0.5 rounded bg-slate-950">LangChain</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">FAISS</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">BM25</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">BGE-M3</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Streamlit</span>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <a href="https://github.com/SagarPundir368/E2E-Medical-Chatbot" target="_blank" class="px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-2 transition-all">
+                                    <i data-lucide="github" class="w-3.5 h-3.5"></i> Code
+                                </a>
+                                <a href="https://e2e-medical-chatbot-7x7zbkqklr5q64qnvqrljr.streamlit.app/" target="_blank" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-xs font-mono flex items-center gap-2 hover:opacity-90 transition-all">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Song Recommender -->
+                    <div class="glass-card-fire rounded-3xl p-7 flex flex-col justify-between space-y-6 relative group overflow-hidden border border-amber-500/25 hover:border-amber-400/80 transition-all">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-start">
+                                <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono">DASK • SPARSE MATRIX</span>
+                                <span class="text-slate-400 text-xs font-mono">Feb 2026 – Apr 2026</span>
+                            </div>
+
+                            <h3 class="text-2xl font-bold text-white group-hover:text-amber-300 transition-colors">
+                                Hybrid Song Recommender System
+                            </h3>
+
+                            <p class="text-slate-300 text-sm leading-relaxed font-light">
+                                Recommender combining TF-IDF content similarity and item collaborative filtering across 9.7M users and 30K+ tracks.
+                            </p>
+
+                            <ul class="space-y-2 text-xs text-slate-300 font-light">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                                    <span>Dask & sparse matrices shrank memory footprint from hundreds of GBs down to 31.5 MB.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                                    <span>Reproducible Git + DVC data versioning pipeline with Streamlit tuning interface.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-amber-500/20">
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-mono text-amber-300">
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Dask</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Scikit-learn</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">SciPy</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">DVC</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Streamlit</span>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <a href="https://github.com/SagarPundir368/Spotify-Hybrid-Recom" target="_blank" class="px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-amber-500/40 text-amber-300 text-xs font-mono flex items-center gap-2 transition-all">
+                                    <i data-lucide="github" class="w-3.5 h-3.5"></i> Code
+                                </a>
+                                <a href="https://spotify-hybrid-recom-nq2ejztctp5czqqx3xyne5.streamlit.app/" target="_blank" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-xs font-mono flex items-center gap-2 hover:opacity-90 transition-all">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Classifier -->
+                    <div class="glass-card-ice rounded-3xl p-7 flex flex-col justify-between space-y-6 relative group overflow-hidden border border-cyan-500/25 hover:border-cyan-400/80 transition-all">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-start">
+                                <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono">NLP • NMF TOPICS</span>
+                                <span class="text-slate-400 text-xs font-mono">Dec 2025 – Feb 2026</span>
+                            </div>
+
+                            <h3 class="text-2xl font-bold text-white group-hover:text-cyan-300 transition-colors">
+                                Customer Ticket Classifier
+                            </h3>
+
+                            <p class="text-slate-300 text-sm leading-relaxed font-light">
+                                Unsupervised NLP text analysis pipeline clustering support complaints into 5 latent topics via TF-IDF & NMF.
+                            </p>
+
+                            <ul class="space-y-2 text-xs text-slate-300 font-light">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                    <span>Benchmarked ML models outputting top-3 topic predictions & confidence probabilities.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                    <span>Versioned models using Git + DVC deployed on Streamlit Cloud.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-cyan-500/20">
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-mono text-cyan-300">
+                                <span class="px-2 py-0.5 rounded bg-slate-950">NLP</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">TF-IDF</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">NMF</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Scikit-learn</span>
+                                <span class="px-2 py-0.5 rounded bg-slate-950">Streamlit</span>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <a href="https://github.com/SagarPundir368/Ticket-classifier-Project" target="_blank" class="px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-2 transition-all">
+                                    <i data-lucide="github" class="w-3.5 h-3.5"></i> Code
+                                </a>
+                                <a href="https://ticket-classifier-project-udt4am3bbmfqdfkhwma3cp.streamlit.app/" target="_blank" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-xs font-mono flex items-center gap-2 hover:opacity-90 transition-all">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 5. ACHIEVEMENTS & CONTACT (FLAME & FROST SANCTUARY) ================= -->
+        <section id="contact" class="section-container pb-28">
+            <div class="max-w-6xl mx-auto w-full space-y-12">
+                
+                <div class="text-center space-y-2">
+                    <div class="inline-block text-cyan-400 font-mono text-xs tracking-widest uppercase">// 05. FLAME & FROST SANCTUARY</div>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white font-serif">Achievements & Terminal</h2>
+                    <p class="text-slate-400 text-sm max-w-lg mx-auto">Open for AI engineering positions, Generative AI research, and high-impact industry roles.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    
+                    <div class="md:col-span-5 space-y-6">
+                        
+                        <!-- LeetCode Milestone -->
+                        <a href="https://leetcode.com/sagarpundir368" target="_blank" class="block glass-card-fire p-6 rounded-3xl group border-orange-500/20 hover:border-orange-400/80 transition-all">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="trophy" class="w-7 h-7"></i>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-lg font-bold text-white group-hover:text-orange-300">LeetCode Milestone</h4>
+                                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 font-bold">100-DAY BADGE</span>
+                                    </div>
+                                    <p class="text-xs font-mono text-slate-300">175+ Problems Solved (DSA & Algorithms)</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Coursera Certifications -->
+                        <div class="glass-card-ice p-6 rounded-3xl space-y-4">
+                            <div class="flex items-center gap-3 text-cyan-300">
+                                <i data-lucide="award" class="w-6 h-6"></i>
+                                <h4 class="font-bold text-white text-md">Coursera Certifications</h4>
+                            </div>
+
+                            <div class="space-y-2.5 font-mono text-xs">
+                                <a href="https://www.coursera.org/account/accomplishments/records/PCPSDNUEHBP4" target="_blank" class="flex justify-between items-center p-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-cyan-500/20 transition-all">
+                                    <span class="text-slate-200">Advanced Learning Algorithms (2024)</span>
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                </a>
+                                <a href="https://www.coursera.org/account/accomplishments/records/XNQV9MFWZWUB" target="_blank" class="flex justify-between items-center p-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-cyan-500/20 transition-all">
+                                    <span class="text-slate-200">Machine Learning Specialization (2024)</span>
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Contacts -->
+                        <div class="glass-panel p-6 rounded-3xl space-y-3 font-mono text-xs text-slate-300">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="phone" class="w-4 h-4 text-orange-400"></i>
+                                <span>+91-9625675230</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="mail" class="w-4 h-4 text-cyan-400"></i>
+                                <span>sagarpundir368@gmail.com</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-orange-400"></i>
+                                <span>IIT Guwahati, Assam, India</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="md:col-span-7 glass-panel p-8 rounded-3xl relative overflow-hidden">
+                        <form id="contact-form" class="space-y-6" onsubmit="event.preventDefault(); submitForm();">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="block font-mono text-xs text-cyan-300 uppercase tracking-wider">Your Name</label>
+                                    <input type="text" required placeholder="Alex Rivera" class="w-full px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors font-sans text-sm">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block font-mono text-xs text-orange-400 uppercase tracking-wider">Email Address</label>
+                                    <input type="email" required placeholder="alex@company.com" class="w-full px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-orange-400 transition-colors font-sans text-sm">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block font-mono text-xs text-cyan-300 uppercase tracking-wider">Subject</label>
+                                <input type="text" required placeholder="AI Engineering Position / Research" class="w-full px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors font-sans text-sm">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block font-mono text-xs text-orange-400 uppercase tracking-wider">Message</label>
+                                <textarea rows="4" required placeholder="Describe your project or opportunities..." class="w-full px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-orange-400 transition-colors font-sans text-sm"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-400 via-orange-500 to-amber-400 hover:from-cyan-300 hover:to-amber-300 text-black font-bold font-mono text-sm tracking-wider shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                <span>TRANSMIT MESSAGE</span>
+                            </button>
+                        </form>
+
+                        <div id="form-success" class="hidden absolute inset-0 glass-panel bg-slate-950/95 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 border-2 border-cyan-400 flex items-center justify-center">
+                                <i data-lucide="check" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white font-serif">Transmission Dispatched</h3>
+                            <p class="text-sm text-slate-300 font-light max-w-xs">Thank you! Sagar will review your message shortly.</p>
+                            <button onclick="resetForm()" class="px-6 py-2 rounded-xl bg-slate-900 border border-slate-700 text-cyan-300 font-mono text-xs">SEND AGAIN</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <footer class="border-t border-slate-800/80 py-8 text-center text-xs font-mono text-slate-500">
+            <p>© 2026 Sagar Pundir. Built with Three.js Procedural Fire & Ice Engine, GSAP ScrollTrigger & Web Audio API.</p>
+        </footer>
+
+    </main>
+
+    <!-- 3D Fire & Ice WebGL Engine Script -->
+    <script>
+        lucide.createIcons();
+
+        // 3D Engine Variables
+        let scene, camera, renderer;
+        let icePeaksMesh, fireVolcanoMesh, steamVortexParticles;
+        let emberParticles, snowParticles;
+        let iceLight, fireLight, ambientLight;
+
+        // Mode: 0 = Dual Clash, 1 = Max Fire, 2 = Max Ice
+        let realmMode = 0;
+        const realmModes = [
+            { name: 'DUAL MODE', icon: 'flame', label: 'FIRE & ICE DUALITY' },
+            { name: 'MAX FIRE', icon: 'sun', label: 'VOLCANIC REALM' },
+            { name: 'MAX ICE', icon: 'snowflake', label: 'GLACIAL REALM' }
+        ];
+
+        // Audio Variables
+        let audioActive = false;
+        let audioCtx, fireNoiseGain, iceChimeInterval;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            init3DFireAndIceRealm();
+            setupScrollTrigger();
+            setupControls();
+        });
+
+        // Initialize 3D Fire & Ice Environment
+        function init3DFireAndIceRealm() {
+            const container = document.getElementById('webgl-container');
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x030712, 0.015);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 12, 32);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            container.appendChild(renderer.domElement);
+
+            // Lighting Setup
+            ambientLight = new THREE.AmbientLight(0x0f172a, 1.8);
+            scene.add(ambientLight);
+
+            // Left Realm Light (Ice Cyan)
+            iceLight = new THREE.PointLight(0x38bdf8, 4.0, 80);
+            iceLight.position.set(-25, 20, 10);
+            scene.add(iceLight);
+
+            // Right Realm Light (Fire Flame)
+            fireLight = new THREE.PointLight(0xf97316, 5.0, 80);
+            fireLight.position.set(25, 20, 10);
+            scene.add(fireLight);
+
+            // Build Left Ice Peaks
+            buildIceGlacierRealm();
+
+            // Build Right Fire Volcano Terrain
+            buildFireVolcanoRealm();
+
+            // Build Center Collision Particles (Embers & Snow & Steam)
+            buildParticleSystems();
+
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+
+            animate();
+        }
+
+        // Left Realm - Crystalline Glacial Peaks
+        function buildIceGlacierRealm() {
+            const width = 80, height = 180, segments = 60;
+            const geometry = new THREE.PlaneGeometry(width, height, segments, segments);
+            geometry.rotateX(-Math.PI / 2);
+
+            const pos = geometry.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+
+                // Sharp crystalline mountain spikes
+                let y = Math.abs(Math.sin(x * 0.1) * Math.cos(z * 0.1)) * 14;
+                y += Math.sin(x * 0.3) * 3;
+
+                pos.setY(i, y);
+            }
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x0284c7,
+                roughness: 0.2,
+                metalness: 0.8,
+                flatShading: true
+            });
+
+            icePeaksMesh = new THREE.Mesh(geometry, material);
+            icePeaksMesh.position.set(-35, -10, -20);
+            scene.add(icePeaksMesh);
+        }
+
+        // Right Realm - Volcanic Magma Terrain
+        function buildFireVolcanoRealm() {
+            const width = 80, height = 180, segments = 60;
+            const geometry = new THREE.PlaneGeometry(width, height, segments, segments);
+            geometry.rotateX(-Math.PI / 2);
+
+            const pos = geometry.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+
+                // Jagged volcanic rock & magma craters
+                let y = (Math.sin(x * 0.15) + Math.cos(z * 0.15)) * 8;
+                y += Math.cos(x * 0.3) * 4;
+
+                pos.setY(i, y);
+            }
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x7f1d1d,
+                roughness: 0.9,
+                metalness: 0.2,
+                flatShading: true
+            });
+
+            fireVolcanoMesh = new THREE.Mesh(geometry, material);
+            fireVolcanoMesh.position.set(35, -10, -20);
+            scene.add(fireVolcanoMesh);
+        }
+
+        // Particles: Rising Volcanic Embers, Falling Snowflakes & Center Steam
+        function buildParticleSystems() {
+            // 1. Rising Fire Embers
+            const emberCount = 350;
+            const emberGeo = new THREE.BufferGeometry();
+            const emberPos = new Float32Array(emberCount * 3);
+
+            for (let i = 0; i < emberCount; i++) {
+                emberPos[i * 3] = Math.random() * 40 + 5; // Right side
+                emberPos[i * 3 + 1] = Math.random() * 40 - 10;
+                emberPos[i * 3 + 2] = (Math.random() - 0.5) * 120;
+            }
+
+            emberGeo.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+
+            const emberMat = new THREE.PointsMaterial({
+                color: 0xf97316,
+                size: 0.45,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            emberParticles = new THREE.Points(emberGeo, emberMat);
+            scene.add(emberParticles);
+
+            // 2. Falling Snow Particles
+            const snowCount = 350;
+            const snowGeo = new THREE.BufferGeometry();
+            const snowPos = new Float32Array(snowCount * 3);
+
+            for (let i = 0; i < snowCount; i++) {
+                snowPos[i * 3] = (Math.random() - 1.0) * 40; // Left side
+                snowPos[i * 3 + 1] = Math.random() * 40 - 10;
+                snowPos[i * 3 + 2] = (Math.random() - 0.5) * 120;
+            }
+
+            snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+
+            const snowMat = new THREE.PointsMaterial({
+                color: 0x7dd3fc,
+                size: 0.35,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            snowParticles = new THREE.Points(snowGeo, snowMat);
+            scene.add(snowParticles);
+        }
+
+        // GSAP ScrollTrigger Integration
+        function setupScrollTrigger() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Progress bar
+            gsap.to('#progress-bar', {
+                width: '100%',
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: 'body',
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    scrub: 0.3
+                }
+            });
+
+            // Camera Motion Timeline across 5 zones
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: 'body',
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    scrub: 1.2
+                }
+            });
+
+            // 1. Hero -> About (Glacial Peak View)
+            tl.to(camera.position, { z: 12, y: 2, x: -8 }, 'step1')
+              .to(camera.rotation, { x: -0.05, y: 0.15 }, 'step1');
+
+            // 2. About -> Skills (Swooping into Volcanic Forge)
+            tl.to(camera.position, { z: -18, y: -2, x: 8 }, 'step2')
+              .to(camera.rotation, { x: 0.08, y: -0.2 }, 'step2');
+
+            // 3. Skills -> Projects (Lava Vault Center)
+            tl.to(camera.position, { z: -55, y: -4, x: 0 }, 'step3')
+              .to(camera.rotation, { x: 0.02, y: 0 }, 'step3');
+
+            // 4. Projects -> Contact (Elemental Sanctuary Ridge)
+            tl.to(camera.position, { z: -90, y: 6, x: 0 }, 'step4')
+              .to(camera.rotation, { x: -0.08, y: 0 }, 'step4');
+        }
+
+        // Animation Loop
+        let mouseX = 0, mouseY = 0;
+        let clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            // Dynamic flame flicker light
+            if (fireLight) {
+                fireLight.intensity = 4.5 + Math.sin(time * 8) * 0.8;
+            }
+
+            // Rising Embers
+            if (emberParticles) {
+                const pos = emberParticles.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let y = pos.getY(i) + 0.12;
+                    if (y > 30) y = -15;
+                    pos.setY(i, y);
+                }
+                pos.needsUpdate = true;
+            }
+
+            // Falling Snow
+            if (snowParticles) {
+                const pos = snowParticles.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let y = pos.getY(i) - 0.06;
+                    if (y < -15) y = 30;
+                    pos.setY(i, y);
+                }
+                pos.needsUpdate = true;
+            }
+
+            // Mouse Parallax
+            camera.position.x += (mouseX * 0.4 - camera.position.x) * 0.02;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseMove(e) {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Controls & Web Audio API
+        function setupControls() {
+            // Realm Mode Toggle
+            document.getElementById('toggle-realm-mode').addEventListener('click', () => {
+                realmMode = (realmMode + 1) % realmModes.length;
+                const cfg = realmModes[realmMode];
+
+                document.getElementById('realm-label').innerText = cfg.label;
+                document.getElementById('realm-mode-btn-text').innerText = cfg.name;
+                document.getElementById('realm-icon').setAttribute('data-lucide', cfg.icon);
+                lucide.createIcons();
+
+                if (realmMode === 1) { // Max Fire
+                    gsap.to(fireLight, { intensity: 8.0, duration: 1 });
+                    gsap.to(iceLight, { intensity: 0.5, duration: 1 });
+                } else if (realmMode === 2) { // Max Ice
+                    gsap.to(fireLight, { intensity: 0.5, duration: 1 });
+                    gsap.to(iceLight, { intensity: 8.0, duration: 1 });
+                } else { // Dual Mode
+                    gsap.to(fireLight, { intensity: 5.0, duration: 1 });
+                    gsap.to(iceLight, { intensity: 4.0, duration: 1 });
+                }
+            });
+
+            // Audio Toggle
+            document.getElementById('toggle-audio').addEventListener('click', () => {
+                audioActive = !audioActive;
+                const icon = document.getElementById('audio-icon');
+
+                if (audioActive) {
+                    icon.setAttribute('data-lucide', 'volume-2');
+                    startFireAndIceAudio();
+                } else {
+                    icon.setAttribute('data-lucide', 'volume-x');
+                    stopFireAndIceAudio();
+                }
+                lucide.createIcons();
+            });
+        }
+
+        // Web Audio API Synthesizer (Fire Rumble & Ice Crystal Chimes)
+        function startFireAndIceAudio() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                // Fire Flame Rumble Noise
+                const bufferSize = audioCtx.sampleRate * 2;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const whiteNoise = audioCtx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(220, audioCtx.currentTime);
+
+                fireNoiseGain = audioCtx.createGain();
+                fireNoiseGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+                whiteNoise.connect(filter);
+                filter.connect(fireNoiseGain);
+                fireNoiseGain.connect(audioCtx.destination);
+                whiteNoise.start();
+
+                // Ice Chime Periodic Rings
+                iceChimeInterval = setInterval(() => {
+                    if (!audioActive) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1200 + Math.random() * 800, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.2);
+                }, 3500);
+
+            } catch (e) {
+                console.log('Audio init prevented');
+            }
+        }
+
+        function stopFireAndIceAudio() {
+            if (audioCtx) {
+                audioCtx.close();
+            }
+            if (iceChimeInterval) {
+                clearInterval(iceChimeInterval);
+            }
+        }
+
+        function submitForm() {
+            document.getElementById('form-success').classList.remove('hidden');
+        }
+
+        function resetForm() {
+            document.getElementById('contact-form').reset();
+            document.getElementById('form-success').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
